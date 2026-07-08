@@ -6,6 +6,7 @@ async fn main() {
     use leptos_axum::{generate_route_list, LeptosRoutes};
     use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode};
     use std::str::FromStr;
+    use tower_http::services::ServeDir;
     use webby::app::App;
 
     dotenvy::dotenv().ok();
@@ -39,7 +40,11 @@ async fn main() {
     let addr = leptos_options.site_addr;
     let routes = generate_route_list(App);
 
+    let site_root = leptos_options.site_root.clone().to_string();
+
     let app = Router::new()
+        // Serve compiled JS/WASM/CSS before Leptos's /*any route can catch them
+        .nest_service("/pkg", ServeDir::new(format!("{site_root}/pkg")))
         .leptos_routes_with_context(
             &leptos_options,
             routes,
@@ -51,7 +56,8 @@ async fn main() {
             },
             App,
         )
-        .fallback(leptos_axum::file_and_error_handler)
+        // Serve public assets and return 404 for anything else
+        .fallback_service(ServeDir::new(site_root))
         .with_state(leptos_options);
 
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
