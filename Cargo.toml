@@ -1,0 +1,64 @@
+[package]
+name = "webby"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+leptos = { version = "0.6" }
+leptos_meta = { version = "0.6" }
+leptos_router = { version = "0.6" }
+leptos_axum = { version = "0.6", optional = true }
+
+axum = { version = "0.7", optional = true }
+tokio = { version = "1", features = ["rt-multi-thread", "signal"], optional = true }
+tower = { version = "0.4", optional = true }
+tower-http = { version = "0.5", features = ["fs", "trace"], optional = true }
+http = { version = "1", optional = true }
+
+console_error_panic_hook = "0.1"
+wasm-bindgen = "=0.2.106"
+serde = { version = "1", features = ["derive"] }
+
+dotenvy = { version = "0.15", optional = true }
+sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite", "migrate", "bundled"], optional = true }
+tracing = { version = "0.1", optional = true }
+tracing-subscriber = { version = "0.3", features = ["env-filter"], optional = true }
+
+[features]
+default = []
+hydrate = ["leptos/hydrate", "leptos_meta/hydrate", "leptos_router/hydrate"]
+ssr = [
+    "dep:axum",
+    "dep:tokio",
+    "dep:tower",
+    "dep:tower-http",
+    "dep:http",
+    "dep:leptos_axum",
+    "dep:dotenvy",
+    "dep:sqlx",
+    "dep:tracing",
+    "dep:tracing-subscriber",
+    "leptos/ssr",
+    "leptos_meta/ssr",
+    "leptos_router/ssr",
+]
+
+[package.metadata.leptos]
+bin-target = "webby"
+output-name = "webby"
+site-root = "target/site"
+site-pkg-dir = "pkg"
+style-file = "style/main.scss"
+assets-dir = "public"
+site-addr = "0.0.0.0:8080"
+reload-port = 3001
+browserquery = "defaults"
+hash-files = true
+env = "DEV"
+bin-features = ["ssr"]
+bin-default-features = false
+lib-features = ["hydrate"]
+lib-default-features = false

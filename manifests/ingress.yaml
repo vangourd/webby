@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: webby
+  namespace: webby
+  annotations:
+    # OAuth2 proxy annotations — adjust to match cluster OAuth setup
+    nginx.ingress.kubernetes.io/auth-url: "https://oauth2.logan.systems/oauth2/auth"
+    nginx.ingress.kubernetes.io/auth-signin: "https://oauth2.logan.systems/oauth2/start?rd=$escaped_request_uri"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: webby.logan.systems
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: webby
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - webby.logan.systems
+      secretName: webby-tls

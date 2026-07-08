@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webby
+  namespace: webby
+  labels:
+    app: webby
+spec:
+  # SQLite is single-writer; keep at 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webby
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: webby
+    spec:
+      containers:
+        - name: webby
+          image: registry.logan.systems/webby:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DATABASE_URL
+              value: "sqlite:///data/webby.db"
+            - name: RUST_LOG
+              value: "info"
+            - name: LEPTOS_SITE_ADDR
+              value: "0.0.0.0:8080"
+            - name: LEPTOS_HASH_FILES
+              value: "true"
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: webby-data
