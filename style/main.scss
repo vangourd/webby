@@ -1,10 +1,493 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+// ── Palette ───────────────────────────────────────────────────────────────────
+
+$bg:           #0c0a07;
+$bg-surface:   #131109;
+$bg-raised:    #1c180f;
+$border:       rgba(196, 158, 80, 0.14);
+$border-hover: rgba(196, 158, 80, 0.30);
+$text:         #e8dfc8;
+$text-muted:   #7a6e56;
+$gold:         #c9a84c;
+$gold-dim:     rgba(201, 168, 76, 0.08);
+$green:        #7eb87a;
+$red:          #c47a6a;
+$yellow:       #d4af37;
+
+// ── Typography ────────────────────────────────────────────────────────────────
+
+$font-display: 'Cinzel', serif;
+$font-body:    'Lora', Georgia, serif;
+$font-mono:    'Courier Prime', 'Courier New', monospace;
+$radius:       3px;
+$topbar-h:     50px;
+
+// ── Reset ─────────────────────────────────────────────────────────────────────
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
 
 body {
-  font-family: system-ui, sans-serif;
-  padding: 2rem;
+  background: $bg;
+  color: $text;
+  font-family: $font-body;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+// ── App shell ─────────────────────────────────────────────────────────────────
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.main-content {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+// ── Top bar ───────────────────────────────────────────────────────────────────
+
+.topbar {
+  height: $topbar-h;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid $border;
+  background: $bg-surface;
+  flex-shrink: 0;
+  z-index: 10;
+
+  &__brand {
+    font-family: $font-display;
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: $gold;
+    text-decoration: none;
+    transition: color 0.15s;
+
+    &:hover { color: lighten($gold, 10%); }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+}
+
+.hamburger {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $text-muted;
+  font-size: 20px;
+  padding: 6px 8px;
+  line-height: 1;
+  transition: color 0.15s;
+
+  &:hover { color: $gold; }
+}
+
+// ── Right drawer ──────────────────────────────────────────────────────────────
+
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 99;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s;
+
+  &--open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 260px;
+  max-width: 85vw;
+  background: $bg-surface;
+  border-left: 1px solid $border;
+  z-index: 100;
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+
+  &--open { transform: translateX(0); }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    min-height: $topbar-h;
+    border-bottom: 1px solid $border;
+    flex-shrink: 0;
+  }
+
+  &__title {
+    font-family: $font-display;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: $text-muted;
+  }
+
+  &__close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: $text-muted;
+    font-size: 18px;
+    padding: 4px 6px;
+    line-height: 1;
+    transition: color 0.15s;
+
+    &:hover { color: $text; }
+  }
+
+  &__item {
+    display: block;
+    width: 100%;
+    padding: 16px 20px;
+    text-align: left;
+    background: none;
+    border: none;
+    border-bottom: 1px solid $border;
+    color: $text;
+    font-family: $font-display;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+
+    &:hover {
+      background: $gold-dim;
+      color: $gold;
+    }
+
+    &--logout { color: $text-muted; }
+  }
+
+  &__footer {
+    margin-top: auto;
+    padding: 16px;
+    border-top: 1px solid $border;
+  }
+}
+
+// ── Buttons ───────────────────────────────────────────────────────────────────
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: $radius;
+  border: 1px solid $border;
+  cursor: pointer;
+  font-family: $font-display;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1;
+  background: transparent;
+  color: $text-muted;
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+
+  &--primary {
+    border-color: $gold;
+    color: $gold;
+    &:hover {
+      background: $gold-dim;
+      color: lighten($gold, 10%);
+    }
+  }
+
+  &--ghost {
+    &:hover {
+      border-color: $border-hover;
+      color: $text;
+    }
+  }
+
+  &--sm { padding: 5px 10px; font-size: 10px; }
+  &--full { width: 100%; }
+  &:disabled { opacity: 0.35; cursor: default; }
+}
+
+// ── Agent dot ─────────────────────────────────────────────────────────────────
+
+.agent-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: $text-muted;
+  opacity: 0.5;
+
+  &--running {
+    background: $green;
+    opacity: 1;
+    animation: dot-pulse 2.4s ease-in-out infinite;
+  }
+  &--error { background: $red; opacity: 1; }
+}
+
+@keyframes dot-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: $text-muted;
+
+  h2 {
+    font-family: $font-display;
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: $text;
+  }
+
+  p {
+    font-size: 15px;
+    font-style: italic;
+    max-width: 300px;
+    text-align: center;
+  }
+}
+
+// ── Agent list page ───────────────────────────────────────────────────────────
+
+.agent-list-page {
+  padding: 28px 24px;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-family: $font-display;
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $text;
+}
+
+.runner-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.runner-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  background: $bg-surface;
+  border: 1px solid $border;
+  border-radius: $radius;
+  text-decoration: none;
+  color: $text;
+  transition: border-color 0.15s, background 0.15s;
+
+  &:hover {
+    border-color: $border-hover;
+    background: $bg-raised;
+  }
+
+  &__info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__name {
+    font-size: 15px;
+    font-style: italic;
+  }
+
+  &__id {
+    font-family: $font-mono;
+    font-size: 11px;
+    color: $text-muted;
+  }
+
+  &__arrow {
+    color: $text-muted;
+    font-size: 22px;
+    line-height: 1;
+  }
+}
+
+.runner-empty {
+  text-align: center;
+  padding: 48px 24px;
+  color: $text-muted;
+
+  p { margin-bottom: 10px; font-style: italic; }
+
+  &__hint {
+    font-size: 13px;
+    font-style: normal;
+
+    code {
+      font-family: $font-mono;
+      font-size: 12px;
+      background: $bg-raised;
+      padding: 2px 6px;
+      border-radius: $radius;
+    }
+  }
+}
+
+.list-status {
+  text-align: center;
+  padding: 32px;
+  color: $text-muted;
+  font-style: italic;
+
+  &--error { color: $red; }
+}
+
+// ── Console / terminal page ───────────────────────────────────────────────────
+
+.console-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.console-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-bottom: 1px solid $border;
+  min-height: $topbar-h;
+  flex-shrink: 0;
+  background: $bg-surface;
+}
+
+.console-title {
+  font-family: $font-mono;
+  font-size: 13px;
+  font-weight: normal;
+  color: $text-muted;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.console-terminal {
+  flex: 1;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.console-placeholder {
+  font-family: $font-mono;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.2);
+}
+
+// ── Badges ────────────────────────────────────────────────────────────────────
+
+.badge {
+  font-family: $font-display;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 20px;
+  border: 1px solid;
+
+  &--running { color: $green; border-color: rgba($green, 0.3); }
+  &--idle    { color: $text-muted; border-color: $border; }
+  &--error   { color: $red; border-color: rgba($red, 0.3); }
+}
+
+.model-tag {
+  font-family: $font-mono;
+  font-size: 11px;
+  color: $text-muted;
+  opacity: 0.7;
+}
+
+// ── Scrollbar ─────────────────────────────────────────────────────────────────
+
+::-webkit-scrollbar       { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: $border; border-radius: 2px; }
+
+// ── Notification bell ─────────────────────────────────────────────────────────
+
+.notification-bell {
+  padding: 2px 6px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: $radius;
+  color: $text-muted;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  transition: color 0.2s, border-color 0.2s;
+
+  &:hover {
+    color: $gold;
+    border-color: $border-hover;
+  }
+
+  &--active  { color: $gold; }
+  &--denied  { color: $red; opacity: 0.6; }
+  &:disabled { cursor: default; opacity: 0.5; }
 }
