@@ -4,7 +4,7 @@ Two supported patterns:
 
 | Pattern | Unit file | Runs as | When to pick it |
 |---|---|---|---|
-| **User template** (recommended for personal desktops) | `user/webby-runner@.service` | your own uid | You want multiple sessions on your workstation, each with your env / workspace access (VR, dev, projects). Linger keeps them alive when you're not logged in. |
+| **User template** (recommended for personal desktops) | `user/webby-runner@.service` | your own uid | You want multiple sessions on your workstation, each with your env and workspace access. Linger keeps them alive when you're not logged in. |
 | **System single** | `webby-runner.service` | dedicated `webby-runner` user | Headless server, one runner, no user account involved. |
 
 Both call the same `webby runner …` under the hood.
@@ -49,19 +49,19 @@ Each instance = one file at `~/.config/webby-runner/<name>.env`. Environment var
 
 Anything else in the env file (e.g. `LEPTOS_SITE_ADDR`, `CARGO_TARGET_DIR`) is inherited by the spawned shell — very useful for isolating dev builds.
 
-### The three-project example
+### Three-instance example
 
 ```bash
-# ~/.config/webby-runner/vr.env — raw shell, full desktop access
+# ~/.config/webby-runner/raw.env — raw shell, full desktop access
 WEBBY_SERVER_URL=http://localhost:8080
-# Everything else defaults: name=vr, shell=bash, no --command.
+# Everything else defaults: name=raw, shell=bash, no --command.
 ```
 
 ```bash
 # ~/.config/webby-runner/webby-dev.env — hack on webby itself
 WEBBY_SERVER_URL=http://localhost:8080
 # Isolate compile output and dev ports so the main webby session isn't touched
-CARGO_TARGET_DIR=/home/YOU/dev/webby/target-dev
+CARGO_TARGET_DIR=$HOME/dev/webby/target-dev
 LEPTOS_SITE_ADDR=127.0.0.1:8081
 LEPTOS_RELOAD_PORT=3002
 # Land in the repo automatically
@@ -69,38 +69,38 @@ WEBBY_COMMAND=cd $HOME/dev/webby && exec bash
 ```
 
 ```bash
-# ~/.config/webby-runner/chunkker.env — desktop-hosted for GPU
+# ~/.config/webby-runner/project.env — a workspace shell
 WEBBY_SERVER_URL=http://localhost:8080
 # mkdir -p so the service still starts before you've cloned the repo
-WEBBY_COMMAND=mkdir -p $HOME/dev/chunkker && cd $HOME/dev/chunkker && exec bash
+WEBBY_COMMAND=mkdir -p $HOME/dev/project && cd $HOME/dev/project && exec bash
 ```
 
 ### Start them
 
 ```bash
 systemctl --user daemon-reload
-systemctl --user enable --now webby-runner@vr.service
+systemctl --user enable --now webby-runner@raw.service
 systemctl --user enable --now webby-runner@webby-dev.service
-systemctl --user enable --now webby-runner@chunkker.service
+systemctl --user enable --now webby-runner@project.service
 
 # Check
 systemctl --user status 'webby-runner@*'
-journalctl --user -u webby-runner@vr.service -f
+journalctl --user -u webby-runner@raw.service -f
 ```
 
-Now three "agents" show up in the Webby UI. From your Surface you attach to any of them; the runner-side sessions persist across your logout/login on the desktop.
+Three agents show up in the Webby UI. Attach to any of them from any device on the network; the runner-side sessions persist across your logout/login on the host.
 
 ### Editing an instance
 
 ```bash
-$EDITOR ~/.config/webby-runner/vr.env
-systemctl --user restart webby-runner@vr.service
+$EDITOR ~/.config/webby-runner/raw.env
+systemctl --user restart webby-runner@raw.service
 ```
 
 Or add a drop-in for one instance without touching the template:
 
 ```bash
-systemctl --user edit webby-runner@vr.service
+systemctl --user edit webby-runner@raw.service
 ```
 
 ### Troubleshooting

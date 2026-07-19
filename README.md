@@ -61,7 +61,7 @@ The flake exposes both a package and two NixOS modules:
 ```nix
 # your NixOS flake.nix
 {
-  inputs.webby.url = "github:you/webby";
+  inputs.webby.url = "github:vangourd/webby";
   outputs = { self, nixpkgs, webby, ... }: {
     nixosConfigurations.myhost = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
@@ -101,7 +101,7 @@ Two patterns under `packaging/systemd/`:
 - **User template** (`user/webby-runner@.service`) — recommended for personal desktops. One template, N instances, each with its own env file at `~/.config/webby-runner/<name>.env`. Runs as you. `loginctl enable-linger $USER` keeps sessions alive across logout / on boot.
 - **System single** (`webby-runner.service`) — one always-on runner as a dedicated service user. For headless servers, K8s nodes, etc.
 
-See `packaging/systemd/README.md` for step-by-step. The user template README covers a three-project layout: raw shell for VR debugging, isolated `cargo leptos watch` on port 8081 for hacking on webby itself, and a `chunkker` session for GPU-hosted app development.
+See `packaging/systemd/README.md` for step-by-step. The user template README covers a three-instance layout: a raw shell for general use, an isolated `cargo leptos watch` on port 8081 for hacking on webby itself, and a project shell that lands you in a workspace directory.
 
 ## Build & deploy
 

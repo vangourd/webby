@@ -1,6 +1,6 @@
 [Unit]
 Description=Webby runner — dials out to a Webby server and exposes a PTY
-Documentation=https://github.com/logan/webby
+Documentation=https://github.com/vangourd/webby
 After=network-online.target
 Wants=network-online.target
 
