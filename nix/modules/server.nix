@@ -47,6 +47,15 @@ in
       description = "System group for the server user.";
     };
 
+    manageUser = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = ''
+        Whether this module should create the service user/group. Set to false
+        when pointing `user`/`group` at an existing account you manage elsewhere.
+      '';
+    };
+
     openFirewall = lib.mkOption {
       type = lib.types.bool;
       default = false;
@@ -74,13 +83,17 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    users.users.${cfg.user} = {
-      isSystemUser = true;
-      group = cfg.group;
-      home = cfg.dataDir;
-      createHome = false;
+    users.users = lib.mkIf cfg.manageUser {
+      ${cfg.user} = {
+        isSystemUser = true;
+        group = cfg.group;
+        home = cfg.dataDir;
+        createHome = false;
+      };
     };
-    users.groups.${cfg.group} = { };
+    users.groups = lib.mkIf cfg.manageUser {
+      ${cfg.group} = { };
+    };
 
     systemd.tmpfiles.rules = [
       "d ${cfg.dataDir} 0750 ${cfg.user} ${cfg.group} - -"

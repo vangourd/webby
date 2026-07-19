@@ -74,6 +74,16 @@ in
       description = "The webby package to use.";
     };
 
+    manageUsers = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = ''
+        Whether this module should create the service users/groups referenced
+        by instances. Set to false when your instances point at existing
+        accounts (e.g. your own uid) you manage elsewhere.
+      '';
+    };
+
     instances = lib.mkOption {
       type = lib.types.attrsOf (lib.types.submodule instanceOpts);
       default = { };
@@ -101,7 +111,7 @@ in
       groupSet = lib.unique (map (n: cfg.instances.${n}.group) instanceNames);
     in
     {
-      users.users = lib.listToAttrs (map (u: {
+      users.users = lib.mkIf cfg.manageUsers (lib.listToAttrs (map (u: {
         name = u;
         value = {
           isSystemUser = true;
@@ -109,12 +119,12 @@ in
           home = "/var/lib/${u}";
           createHome = false;
         };
-      }) userSet);
+      }) userSet));
 
-      users.groups = lib.listToAttrs (map (g: {
+      users.groups = lib.mkIf cfg.manageUsers (lib.listToAttrs (map (g: {
         name = g;
         value = { };
-      }) groupSet);
+      }) groupSet));
 
       systemd.tmpfiles.rules = map (n:
         let i = cfg.instances.${n};
