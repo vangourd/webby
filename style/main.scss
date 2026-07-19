@@ -427,16 +427,16 @@ body {
 .console-terminal {
   flex: 1;
   background: #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
-}
+  padding: 8px;
 
-.console-placeholder {
-  font-family: $font-mono;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.2);
+  // xterm's viewport needs to fill this container.
+  .xterm,
+  .xterm-viewport,
+  .xterm-screen {
+    width: 100% !important;
+    height: 100% !important;
+  }
 }
 
 // ── Badges ────────────────────────────────────────────────────────────────────

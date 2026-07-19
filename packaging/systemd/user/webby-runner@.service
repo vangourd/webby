@@ -1,0 +1,24 @@
+[Unit]
+Description=Webby runner (%i)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+# Per-instance config. If missing, the service errors out loudly.
+EnvironmentFile=%h/.config/webby-runner/%i.env
+# sh -c so ${WEBBY_COMMAND:+…} works — systemd's own arg tokenizer can't do
+# "optional flag with a quoted multi-word value" cleanly.
+# %i defaults the runner name so a simple env file just needs SERVER_URL.
+ExecStart=/bin/sh -c 'exec "${WEBBY_BIN:-/usr/local/bin/webby}" runner "$WEBBY_SERVER_URL" --name "${WEBBY_RUNNER_NAME:-%i}" ${WEBBY_COMMAND:+--command "$WEBBY_COMMAND"} ${WEBBY_SHELL:+--shell "$WEBBY_SHELL"}'
+# `always` so `exit` / ^D from the browser respawns a clean shell rather than
+# killing the session (the runner's name-based identity + server-side grace
+# period make this seamless — same runner_id, watchers stay attached).
+# To actually stop a session: `systemctl --user stop webby-runner@NAME.service`.
+Restart=always
+RestartSec=2s
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

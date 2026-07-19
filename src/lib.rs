@@ -1,5 +1,7 @@
 pub mod app;
 pub mod notifications;
+#[cfg(feature = "runner")]
+pub mod runner;
 pub mod terminal;
 
 #[cfg(feature = "hydrate")]

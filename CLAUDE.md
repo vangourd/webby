@@ -1,5 +1,7 @@
 # Claude Code Configuration
 
+**This is a PUBLIC repository.** Do not reference private hostnames, registries, IPs, credentials, personal email/handles, or internal-tool URLs in code or docs. Use placeholder values (`registry.example.com`, `webby.example.com`, env vars) and let deployers configure real values themselves.
+
 ## Environment Setup
 **IMPORTANT**: Always use Nix for this project. Do not use system binaries.
 
@@ -17,8 +19,8 @@ nix run .#dev
 ## Build & Deploy
 
 ```bash
-# Build release image and push to registry.logan.systems
-nix run .#build-push
+# Build release image and push (set WEBBY_IMAGE to your registry target)
+WEBBY_IMAGE=registry.example.com/webby:latest nix run .#build-push
 
 # Apply K8s manifests (namespace must exist first)
 kubectl create namespace webby --dry-run=client -o yaml | kubectl apply -f -
@@ -49,5 +51,5 @@ SQLite is single-writer, so the K8s deployment uses `replicas: 1` and `strategy:
 ## Notes
 - All tooling must come from the Nix flake, not system PATH
 - SQLite is bundled into the binary (no libsqlite3 runtime dep)
-- Push target: `registry.logan.systems` — no auth needed on LAN
+- Push target is set by `WEBBY_IMAGE` env var; the flake app expects the operator to configure their own registry
 - OAuth is handled at the cluster ingress layer (oauth2-proxy), not in the app

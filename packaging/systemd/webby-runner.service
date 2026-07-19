@@ -1,0 +1,31 @@
+[Unit]
+Description=Webby runner — dials out to a Webby server and exposes a PTY
+Documentation=https://github.com/logan/webby
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=webby-runner
+Group=webby-runner
+EnvironmentFile=/etc/webby-runner.env
+ExecStart=/usr/local/bin/webby runner ${WEBBY_SERVER_URL} --name ${WEBBY_RUNNER_NAME} --shell ${WEBBY_SHELL}
+Restart=on-failure
+RestartSec=5s
+
+# Reasonable hardening defaults. For sandboxed sessions the runner still spawns
+# podman/microvm as subprocesses, so we can't lock everything down further here.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

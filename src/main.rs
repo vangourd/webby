@@ -1,6 +1,64 @@
 #[cfg(feature = "ssr")]
+use clap::{Parser, Subcommand};
+
+#[cfg(feature = "ssr")]
+#[derive(Parser, Debug)]
+#[command(name = "webby", about = "Webby server and runner")]
+struct Cli {
+    #[command(subcommand)]
+    command: Option<Command>,
+}
+
+#[cfg(feature = "ssr")]
+#[derive(Subcommand, Debug)]
+enum Command {
+    /// Run the web server (default when no subcommand is given)
+    Serve,
+    /// Connect to a webby server as a PTY runner
+    Runner {
+        /// Server URL (e.g. http://localhost:8080 or ws://localhost:8080)
+        server: String,
+        /// Human-readable name for this runner (defaults to hostname)
+        #[arg(long)]
+        name: Option<String>,
+        /// Shell to spawn. Ignored when --command is set.
+        #[arg(long, default_value = "bash")]
+        shell: String,
+        /// Full command line to spawn instead of a shell. Executed via `sh -c`
+        /// so quotes/pipes/redirects work. Example:
+        /// --command 'podman run --rm -it -v $HOME/sbx:/work img bash'
+        #[arg(long)]
+        command: Option<String>,
+    },
+}
+
+#[cfg(feature = "ssr")]
 #[tokio::main]
-async fn main() {
+async fn main() -> anyhow::Result<()> {
+    let cli = Cli::parse();
+
+    match cli.command {
+        Some(Command::Runner {
+            server,
+            name,
+            shell,
+            command,
+        }) => {
+            let name = name.unwrap_or_else(webby::runner::default_name);
+            webby::runner::run(webby::runner::RunnerConfig {
+                server,
+                name,
+                shell,
+                command,
+            })
+            .await
+        }
+        Some(Command::Serve) | None => serve().await,
+    }
+}
+
+#[cfg(feature = "ssr")]
+async fn serve() -> anyhow::Result<()> {
     use axum::Router;
     use leptos::*;
     use leptos_axum::{generate_route_list, LeptosRoutes};
@@ -78,6 +136,7 @@ async fn main() {
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
     tracing::info!("Listening on {addr}");
     axum::serve(listener, app).await.unwrap();
+    Ok(())
 }
 
 #[cfg(not(feature = "ssr"))]

@@ -120,7 +120,7 @@ fn AgentList() -> impl IntoView {
                                 <p>"No runners connected."</p>
                                 <p class="runner-empty__hint">
                                     "Start one with: "
-                                    <code>"webby-runner --server ws://localhost:8080 --name my-machine"</code>
+                                    <code>"webby runner http://localhost:8080 --name my-machine"</code>
                                 </p>
                             </div>
                         }.into_view(),
@@ -153,16 +153,75 @@ fn AgentConsole() -> impl IntoView {
     let params = use_params_map();
     let runner_id = move || params.with(|p| p.get("id").cloned().unwrap_or_default());
 
+    #[allow(unused_variables)]
+    let term_ref = create_node_ref::<html::Div>();
+
+    #[cfg(feature = "hydrate")]
+    {
+        use std::cell::RefCell;
+        use std::rc::Rc;
+        use wasm_bindgen::{JsCast, JsValue};
+
+        let cleanup: Rc<RefCell<Option<js_sys::Function>>> = Rc::new(RefCell::new(None));
+
+        {
+            let cleanup = cleanup.clone();
+            create_effect(move |_| {
+                let Some(container) = term_ref.get() else {
+                    return;
+                };
+                let rid = runner_id();
+                if rid.is_empty() {
+                    return;
+                }
+
+                let Some(win) = web_sys::window() else {
+                    return;
+                };
+                let Ok(mount_val) =
+                    js_sys::Reflect::get(&win, &JsValue::from_str("webbyMountTerminal"))
+                else {
+                    return;
+                };
+                let Ok(mount_fn) = mount_val.dyn_into::<js_sys::Function>() else {
+                    return;
+                };
+
+                let div: &web_sys::HtmlDivElement = &container;
+                let container_val: JsValue = div.clone().into();
+                let Ok(ret) =
+                    mount_fn.call2(&JsValue::UNDEFINED, &container_val, &JsValue::from_str(&rid))
+                else {
+                    return;
+                };
+                let promise = js_sys::Promise::from(ret);
+                let cleanup = cleanup.clone();
+                wasm_bindgen_futures::spawn_local(async move {
+                    if let Ok(val) = wasm_bindgen_futures::JsFuture::from(promise).await {
+                        if let Ok(f) = val.dyn_into::<js_sys::Function>() {
+                            *cleanup.borrow_mut() = Some(f);
+                        }
+                    }
+                });
+            });
+        }
+
+        on_cleanup(move || {
+            if let Some(f) = cleanup.borrow_mut().take() {
+                let _ = f.call0(&JsValue::UNDEFINED);
+            }
+        });
+    }
+
     view! {
+        <Script src="/webby-terminal.js"/>
         <div class="console-page">
             <div class="console-header">
                 <A href="/agents" class="btn btn--ghost btn--sm">"‹ Back"</A>
                 <span class="agent-dot agent-dot--running"/>
                 <h2 class="console-title">{runner_id}</h2>
             </div>
-            <div class="console-terminal">
-                <p class="console-placeholder">"[ terminal ]"</p>
-            </div>
+            <div class="console-terminal" node_ref=term_ref/>
         </div>
     }
 }

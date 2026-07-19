@@ -1,6 +1,10 @@
 /target/
+/target-dev/
 /build-context/
+/result
+/result-*
 *.db
 *.db-shm
 *.db-wal
 .env
+.claude/
