@@ -68,8 +68,6 @@
             OPENSSL_LIB_DIR = "${pkgs.openssl.out}/lib";
             OPENSSL_INCLUDE_DIR = "${pkgs.openssl.dev}/include";
             PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
-
-            LEPTOS_HASH_FILES = "true";
           };
 
           # Warm the cargo cache separately (with both host + wasm32 targets).
@@ -124,7 +122,7 @@
             ${commonEnv}
             IMAGE="''${WEBBY_IMAGE:-registry.example.com/webby:latest}"
             echo "Building webby..."
-            LEPTOS_HASH_FILES=true ${pkgs.cargo-leptos}/bin/cargo-leptos build --release
+            ${pkgs.cargo-leptos}/bin/cargo-leptos build --release
             echo "Patching binary for standard Linux..."
             ${pkgs.patchelf}/bin/patchelf --set-interpreter /lib64/ld-linux-x86-64.so.2 target/release/webby
             ${pkgs.patchelf}/bin/patchelf --set-rpath /lib/x86_64-linux-gnu target/release/webby

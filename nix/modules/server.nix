@@ -117,13 +117,12 @@ in
       serviceConfig = {
         Type = "exec";
         ExecStart = "${cfg.package}/bin/webby serve";
+        EnvironmentFile = lib.mkIf (cfg.environmentFile != null) cfg.environmentFile;
         User = cfg.user;
         Group = cfg.group;
         WorkingDirectory = cfg.dataDir;
         Restart = "on-failure";
         RestartSec = "5s";
-
-        EnvironmentFile = lib.mkIf (cfg.environmentFile != null) cfg.environmentFile;
 
         # Hardening
         NoNewPrivileges = true;

@@ -17,7 +17,6 @@ RUN mkdir -p /data logs
 
 ENV LEPTOS_SITE_ROOT=/app/target/site
 ENV LEPTOS_SITE_ADDR=0.0.0.0:8080
-ENV LEPTOS_HASH_FILES=true
 ENV DATABASE_URL=sqlite:///data/webby.db
 ENV RUST_LOG=info
 
